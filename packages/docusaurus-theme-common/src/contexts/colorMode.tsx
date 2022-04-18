@@ -65,10 +65,17 @@ function useContextValue(): ContextValue {
     getInitialColorMode(defaultMode),
   );
 
-  const setColorMode = useCallback((newColorMode: ColorMode) => {
-    setColorModeState(newColorMode);
-    storeColorMode(newColorMode);
-  }, []);
+  const setColorMode = useCallback(
+    (newColorMode: ColorMode) => {
+      setColorModeState(newColorMode);
+      // If switch is disabled, color mode can still be toggled through system
+      // settings. We don't store this since it's not really an active choice.
+      if (!disableSwitch) {
+        storeColorMode(newColorMode);
+      }
+    },
+    [disableSwitch],
+  );
 
   useEffect(() => {
     document.documentElement.setAttribute(
@@ -139,7 +146,6 @@ function useContextValue(): ContextValue {
           );
         }
         setColorMode(ColorModes.light);
-        storeColorMode(ColorModes.light);
       },
       setDarkTheme() {
         if (process.env.NODE_ENV === 'development') {
@@ -148,7 +154,6 @@ function useContextValue(): ContextValue {
           );
         }
         setColorMode(ColorModes.dark);
-        storeColorMode(ColorModes.dark);
       },
     }),
     [colorMode, setColorMode],
